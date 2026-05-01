@@ -9,23 +9,56 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import emailjs from "@emailjs/browser";
+
+// Initialize EmailJS with your Public Key
+// Get your Public Key from: https://dashboard.emailjs.com/admin/account
+emailjs.init("YOUR_PUBLIC_KEY_HERE");
 
 export const ContactSection = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const formData = new FormData(e.target);
+      const name = formData.get("name");
+      const email = formData.get("email");
+      const message = formData.get("message");
+
+      // Send email using EmailJS
+      await emailjs.send(
+        "YOUR_SERVICE_ID_HERE", // Get from EmailJS dashboard
+        "YOUR_TEMPLATE_ID_HERE", // Get from EmailJS dashboard
+        {
+          to_email: "vishalkumarvarun01@gmail.com", // Your email
+          from_name: name,
+          from_email: email,
+          message: message,
+        }
+      );
+
       toast({
         title: "Message sent!",
         description: "Thank you for your message. I'll get back to you soon.",
       });
+
+      // Reset form
+      e.target.reset();
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      toast({
+        title: "Failed to send",
+        description: "There was an error sending your message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
   return (
     <section id="contact" className="relative bg-secondary/40 px-4 py-24">
@@ -49,40 +82,40 @@ export const ContactSection = () => {
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="rounded-lg bg-primary/10 p-3">
-                  <Mail className="h-6 w-6 text-primary" />{" "}
-                </div>
-                <div>
+                    <Mail className="h-6 w-6 text-primary" />{" "}
+                  </div>
+                  <div>
                     <h4 className="font-bold">Email</h4>
-                  <a
-                    href="mailto:vishalkumarvarun01@gmail.com"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    vishalkumarvarun01@gmail.com
-                  </a>
+                    <a
+                      href="mailto:vishalkumarvarun01@gmail.com"
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      vishalkumarvarun01@gmail.com
+                    </a>
+                  </div>
                 </div>
-              </div>
                 <div className="flex items-start gap-4">
                   <div className="rounded-lg bg-accent/10 p-3">
-                  <Phone className="h-6 w-6 text-primary" />{" "}
-                </div>
-                <div>
+                    <Phone className="h-6 w-6 text-primary" />{" "}
+                  </div>
+                  <div>
                     <h4 className="font-bold">Phone</h4>
-                  <a
-                    href="tel:+916393204940"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    +91 63932 04940
-                  </a>
+                    <a
+                      href="tel:+916393204940"
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      +91 63932 04940
+                    </a>
+                  </div>
                 </div>
-              </div>
                 <div className="flex items-start gap-4">
                   <div className="rounded-lg bg-secondary p-3">
-                  <MapPin className="h-6 w-6 text-primary" />{" "}
-                </div>
-                <div>
+                    <MapPin className="h-6 w-6 text-primary" />{" "}
+                  </div>
+                  <div>
                     <h4 className="font-bold">Location</h4>
                     <p className="text-muted-foreground">
-                    Gorakhpur, Uttar Pradesh, India
+                      Gorakhpur, Uttar Pradesh, India
                     </p>
                   </div>
                 </div>
@@ -91,24 +124,24 @@ export const ContactSection = () => {
               <div className="mt-8 border-t border-border pt-6">
                 <h4 className="mb-4 font-bold">Connect With Me</h4>
                 <div className="flex gap-3">
-                <a
-                  href="https://www.linkedin.com/in/vishal-varun-385a94257/"
-                  target="_blank"
+                  <a
+                    href="https://www.linkedin.com/in/vishal-varun-385a94257/"
+                    target="_blank"
                     rel="noreferrer"
                     aria-label="LinkedIn"
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background transition-colors hover:border-primary hover:text-primary"
-                >
-                  <Linkedin />
-                </a>
-                <a
-                  href="https://x.com/Vishalvarun1208?t=_f6Drwz5xVQNjY8NNDNR5g&s=09"
-                  target="_blank"
+                  >
+                    <Linkedin />
+                  </a>
+                  <a
+                    href="https://x.com/Vishalvarun1208?t=_f6Drwz5xVQNjY8NNDNR5g&s=09"
+                    target="_blank"
                     rel="noreferrer"
                     aria-label="Twitter"
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background transition-colors hover:border-primary hover:text-primary"
-                >
-                  <Twitter />
-                </a>
+                  >
+                    <Twitter />
+                  </a>
                 </div>
               </div>
             </div>
