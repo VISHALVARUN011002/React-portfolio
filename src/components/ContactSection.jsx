@@ -9,11 +9,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import emailjs from "@emailjs/browser";
-
-// Initialize EmailJS with your Public Key
-// Get your Public Key from: https://dashboard.emailjs.com/admin/account
-emailjs.init("YOUR_PUBLIC_KEY_HERE");
 
 export const ContactSection = () => {
   const { toast } = useToast();
@@ -30,25 +25,29 @@ export const ContactSection = () => {
       const email = formData.get("email");
       const message = formData.get("message");
 
-      // Send email using EmailJS
-      await emailjs.send(
-        "YOUR_SERVICE_ID_HERE", // Get from EmailJS dashboard
-        "YOUR_TEMPLATE_ID_HERE", // Get from EmailJS dashboard
-        {
-          to_email: "vishalkumarvarun01@gmail.com", // Your email
-          from_name: name,
-          from_email: email,
+      // Send email using Formspree
+      const response = await fetch("https://formspree.io/f/YOUR_FORM_ID", {
+        method: "POST",
+        body: JSON.stringify({
+          name: name,
+          email: email,
           message: message,
-        }
-      );
-
-      toast({
-        title: "Message sent!",
-        description: "Thank you for your message. I'll get back to you soon.",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
-      // Reset form
-      e.target.reset();
+      if (response.ok) {
+        toast({
+          title: "Message sent!",
+          description: "Thank you for your message. I'll get back to you soon.",
+        });
+        // Reset form
+        e.target.reset();
+      } else {
+        throw new Error("Failed to send");
+      }
     } catch (error) {
       console.error("Failed to send email:", error);
       toast({
