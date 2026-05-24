@@ -11,13 +11,46 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 
+const emailjsConfig = {
+  publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY?.trim(),
+  serviceId: import.meta.env.VITE_EMAILJS_SERVICE_ID?.trim(),
+  templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID?.trim(),
+};
+
+const isEmailjsConfigured = Object.values(emailjsConfig).every(Boolean);
+
+const getEmailErrorMessage = (error) => {
+  const status = error?.status;
+
+  if (!isEmailjsConfigured) {
+    return "Email service is not configured yet. Please use the direct email link for now.";
+  }
+
+  if (status === 400 || status === 401 || status === 403) {
+    return "Email service rejected the request. Please email me directly while I check the configuration.";
+  }
+
+  if (status === 429) {
+    return "Too many messages were sent in a short time. Please try again in a few minutes.";
+  }
+
+  return "Something went wrong while sending your message. Please try again or email me directly.";
+};
+
 export const ContactSection = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize EmailJS
   useEffect(() => {
-    emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+    if (isEmailjsConfigured) {
+      emailjs.init({
+        publicKey: emailjsConfig.publicKey,
+      });
+    } else {
+      console.warn(
+        "EmailJS is not configured. Add VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, and VITE_EMAILJS_TEMPLATE_ID to the deployment environment."
+      );
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -31,15 +64,21 @@ export const ContactSection = () => {
       const email = formData.get("email");
       const message = formData.get("message");
 
-      // Send email using EmailJS
+      if (!isEmailjsConfigured) {
+        throw new Error("Missing EmailJS environment variables");
+      }
+
       const response = await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        emailjsConfig.serviceId,
+        emailjsConfig.templateId,
         {
           to_email: "vishalkumarvarun01@gmail.com",
           from_name: name,
           from_email: email,
           message: message,
+        },
+        {
+          publicKey: emailjsConfig.publicKey,
         }
       );
 
@@ -47,8 +86,8 @@ export const ContactSection = () => {
         toast({
           title: "Message sent!",
           description: "Thank you for your message. I'll get back to you soon.",
+          variant: "success",
         });
-        // Reset form
         e.target.reset();
       } else {
         throw new Error("Failed to send email");
@@ -57,7 +96,7 @@ export const ContactSection = () => {
       console.error("Failed to send email:", error);
       toast({
         title: "Failed to send",
-        description: "There was an error sending your message. Please try again.",
+        description: getEmailErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -210,7 +249,7 @@ export const ContactSection = () => {
                 type="submit"
                 disabled={isSubmitting}
                 className={cn(
-                  "cosmic-button flex w-full items-center justify-center gap-2"
+                  "cosmic-button flex w-full items-center justify-center gap-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70"
                 )}
               >
                 {isSubmitting ? "Sending..." : "Send Message"}

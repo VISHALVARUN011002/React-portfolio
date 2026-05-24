@@ -58,16 +58,41 @@ VITE_EMAILJS_SERVICE_ID=your_service_id_here
 VITE_EMAILJS_TEMPLATE_ID=your_template_id_here
 ```
 
-## Step 6: Test the Form
+## Step 6: Add Vercel Environment Variables
+
+Vite only includes variables that start with `VITE_` in the browser bundle, and
+Vercel only includes them if they exist in the project settings before the build.
+
+1. Open your Vercel project dashboard.
+2. Go to **Settings** -> **Environment Variables**.
+3. Add these variables for **Production**, **Preview**, and **Development**:
+
+```env
+VITE_EMAILJS_PUBLIC_KEY=your_public_key_here
+VITE_EMAILJS_SERVICE_ID=your_service_id_here
+VITE_EMAILJS_TEMPLATE_ID=your_template_id_here
+```
+
+4. Save the variables.
+5. Redeploy the project so Vercel rebuilds the Vite bundle with those values.
+
+If EmailJS domain restrictions are enabled, add your deployed Vercel domain and
+custom domain in the EmailJS dashboard under the allowed origins/security
+settings.
+
+## Step 7: Test the Form
 
 1. Run your dev server: `npm run dev`
 2. Go to the contact section
 3. Fill out and submit the form
 4. Check your email to confirm it's working
+5. After deployment, test the same form on the live Vercel URL
 
 ## Troubleshooting
 
 - **"Missing credentials" error**: Make sure all three environment variables are set correctly
+- **Works locally but fails on Vercel**: Add the same `VITE_EMAILJS_*` variables in Vercel and redeploy
+- **403 on Vercel only**: Check EmailJS allowed origins/domain restrictions and add the deployed URL
 - **Email not received**: Check your email's spam/junk folder
 - **Template not matching**: Ensure your template variables match exactly: `{{from_name}}`, `{{from_email}}`, `{{message}}`
 
